@@ -23,8 +23,35 @@ datasource db {
 model Post {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  content   String   @db.VarChar(255)
   authorId  String
+  content   String   @db.VarChar(255)
+
+  trazimUslugu Boolean
+  kategorija String //vodovodna instalacija, elektrika, postavljanje parketa, ostalo
+  lokacija  String
+  cijena   Int 
+
+
 
   @@index([authorId])
+}
+
+//sort za trazimUslugu da/ne (client/worker)
+
+model rating {
+ postId        String   @id @default(cuid())
+
+  korisnik String
+  
+  ocjena Int
+  komentar String
+}
+
+
+model prethodni{
+  //za dodat radove na profil
+  id        String   @id @default(cuid())
+   slika    String
+    opis     String
+
 }

@@ -35,6 +35,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
       <Head>
         <title>{data.username ?? data.externalUsername}</title>
       </Head>
+      {/* za uredit profil */}
       <PageLayout>
         <div className="relative h-36 bg-slate-600">
           <Image

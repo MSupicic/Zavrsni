@@ -37,7 +37,7 @@ const addUserDataToPosts = async (posts: Post[]) => {
       if (!author.externalUsername) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: `Author has no GitHub Account: ${author.id}`,
+          message: `Author has no Google Account: ${author.id}`,
         });
       }
       author.username = author.externalUsername;
@@ -102,7 +102,7 @@ export const postsRouter = createTRPCRouter({
   create: privateProcedure
     .input(
       z.object({
-        content: z.string().emoji("Only emojis are allowed").min(1).max(280),
+        content: z.string().min(1).max(280),
       })
     )
     .mutation(async ({ ctx, input }) => {

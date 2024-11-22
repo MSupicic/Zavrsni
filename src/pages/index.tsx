@@ -35,18 +35,19 @@ const CreatePostWizard = () => {
   if (!user) return null;
 
   return (
-
     <div className="flex w-full gap-3">
-      <UserButton appearance={{
-        elements: {
-          userButtonAvatarBox: {
-            width: 56,
-            height: 56
-          }
-        }
-      }} />
+      <UserButton
+        appearance={{
+          elements: {
+            userButtonAvatarBox: {
+              width: 56,
+              height: 56,
+            },
+          },
+        }}
+      />
       <input
-        placeholder="Type some emojis!"
+        placeholder="Type something"
         className="grow bg-transparent outline-none"
         type="text"
         value={input}
@@ -56,6 +57,7 @@ const CreatePostWizard = () => {
             e.preventDefault();
             if (input !== "") {
               mutate({ content: input });
+              console.log("jebenti boga");
             }
           }
         }}
@@ -87,7 +89,7 @@ const Feed = () => {
 
   return (
     <div className="flex grow flex-col overflow-y-scroll">
-      {[...data, ...data, ...data, ...data].map((fullPost) => (
+      {[...data].map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}
     </div>
@@ -116,7 +118,7 @@ const Home: NextPage = () => {
 
       <Feed />
       <div className="flex items-center justify-between p-4 text-xl">
-        <a href="https://github.com/t3dotgg/chirp">
+        {/* <a href="https://github.com/t3dotgg/chirp">
           <div className="flex items-center justify-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -129,9 +131,9 @@ const Home: NextPage = () => {
             </svg>
             <div>Github</div>
           </div>
-        </a>
+        </a> */}
         <span>
-          <a href="https://patreon.com/t3dotgg">🐦 Chirp Blue</a>
+          {/* <a href="https://patreon.com/t3dotgg">🐦 Chirp Blue</a> */}
         </span>
       </div>
     </PageLayout>
