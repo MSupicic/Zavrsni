@@ -81,6 +81,26 @@ export const postsRouter = createTRPCRouter({
     return addUserDataToPosts(posts);
   }),
 
+  getAllNudimUslugu: publicProcedure.query(async ({ ctx }) => {
+    const posts = await ctx.prisma.post.findMany({
+      where: { trazimUslugu: false },
+      take: 100,
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    return addUserDataToPosts(posts);
+  }),
+
+  getAllTrazimUslugu: publicProcedure.query(async ({ ctx }) => {
+    const posts = await ctx.prisma.post.findMany({
+      where: { trazimUslugu: true },
+      take: 100,
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    return addUserDataToPosts(posts);
+  }),
+
   getPostsByUserId: publicProcedure
     .input(
       z.object({
@@ -103,6 +123,11 @@ export const postsRouter = createTRPCRouter({
     .input(
       z.object({
         content: z.string().min(1).max(280),
+
+        trazimUslugu: z.boolean(),
+        kategorija: z.string(),
+        lokacija: z.string(),
+        cijena: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -115,6 +140,10 @@ export const postsRouter = createTRPCRouter({
         data: {
           authorId,
           content: input.content,
+          trazimUslugu: input.trazimUslugu,
+          kategorija: input.kategorija,
+          lokacija: input.lokacija,
+          cijena: input.cijena,
         },
       });
 
