@@ -36,7 +36,7 @@ model Post {
   @@index([authorId])
 }
 
-//sort za trazimUslugu da/ne (client/worker)
+
 
 model rating {
  postId        String   @id @default(cuid())
@@ -49,8 +49,8 @@ model rating {
 
 
 model prethodni{
-  //za dodat radove na profil
-  id        String   @id @default(cuid())
+  
+   authorId  String @id @default(cuid())
    slika    String
     opis     String
 
