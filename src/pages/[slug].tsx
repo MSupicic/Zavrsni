@@ -7,6 +7,7 @@ import { LoadingPage } from "~/components/loading";
 import { PostView } from "~/components/postview";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { useState } from "react";
+import { WorkView } from "~/components/workview";
 
 // const ProfileFeed = (props: { userId: string }, feedType: string) => {
 //   const { data, isLoading } = api.posts.getPostsByUserId.useQuery({
@@ -51,7 +52,7 @@ const ProfileFeed = (props: { userId: string; feedType: string }) => {
             <PostView {...fullPost} key={fullPost.post.id} />
           ))
         : data.map((fullPost) => (
-            <PostView {...fullPost} key={fullPost.post.id} />
+            <WorkView {...fullPost} key={fullPost.post.id} />
           ))}
     </div>
   );
