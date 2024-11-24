@@ -20,6 +20,18 @@ datasource db {
   url       = env("DATABASE_URL")
 }
 
+model rating {
+  id        String   @id @default(cuid())
+  korisnik  String
+ authorId  String
+  ocjena    Int
+  komentar  String
+     // Foreign key field
+  //post      Post     @relation(fields: [postId], references: [id]) // Relation setup
+
+  //@@index([postId]) // Optional: Index for better query performance
+}
+
 model Post {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -31,27 +43,17 @@ model Post {
   lokacija  String
   cijena   Int 
 
-
-
   @@index([authorId])
 }
 
-
-
-model rating {
- postId        String   @id @default(cuid())
-
-  korisnik String
-  
-  ocjena Int
-  komentar String
-}
-
-
 model prethodni{
-  
-   authorId  String @id @default(cuid())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+   authorId  String 
    slika    String
     opis     String
-
 }
+
+
+
+

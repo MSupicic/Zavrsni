@@ -8,6 +8,14 @@ import { PostView } from "~/components/postview";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { useState } from "react";
 import { WorkView } from "~/components/workview";
+import type { RouterOutputs } from "~/utils/api";
+
+import dayjs from "dayjs";
+
+import Link from "next/link";
+
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 // const ProfileFeed = (props: { userId: string }, feedType: string) => {
 //   const { data, isLoading } = api.posts.getPostsByUserId.useQuery({
@@ -26,13 +34,65 @@ import { WorkView } from "~/components/workview";
 //     </div>
 //   );
 // };
+//type PostWithUser = RouterOutputs["posts"]["getAll"][number];
+type Author = {
+  username: string;
+  id: string;
+  profileImageUrl: string;
+  externalUsername: string | null;
+};
+
+export const Comments = ({ author }: { author: Author }) => {
+  return (
+    <div key={author.id} className="flex gap-3 border-b border-slate-400 p-4">
+      <Image
+        src={author.profileImageUrl}
+        className="h-14 w-14 rounded-full"
+        alt={`@${author.username}'s profile picture`}
+        width={56}
+        height={56}
+      />
+      <div className="flex w-full flex-col">
+        <div className="flex gap-1 text-slate-300">
+          <Link href={`/@${author.username}`}>
+            <span>{`@${author.username} `}</span>
+          </Link>
+          {/* <Link href={`/post/${post.id}`}>
+            <span className="font-thin">{` · ${dayjs(
+              post.createdAt
+            ).fromNow()}`}</span>
+          </Link> */}
+        </div>
+
+        {/* <div className="text-2xl">
+          <span>Kategorija: </span> {post.kategorija}
+        </div>
+        <div className="text-2xl">
+          <span>Opis: </span>
+          {post.content}
+        </div>
+        <div className="text-2xl">
+          <span>Lokacija: </span>
+          {post.lokacija}
+        </div>
+        <div className="text-2xl">
+          <span>Cijena: </span>
+          {post.cijena}$
+        </div> */}
+      </div>
+    </div>
+  );
+};
 
 const ProfileFeed = (props: { userId: string; feedType: string }) => {
   // Conditionally use the appropriate query based on feedType
   const { data, isLoading } =
     props.feedType === "oglasi"
       ? api.posts.getPostsByUserId.useQuery({ userId: props.userId })
-      : api.posts.getWorksByUserId.useQuery({ userId: props.userId });
+      : props.feedType === "radovi"
+      ? api.posts.getWorksByUserId.useQuery({ userId: props.userId })
+      : api.posts.getPostsByUserId.useQuery({ userId: props.userId });
+  // api.posts.getRatingsByUserId.useQuery({ userId: props.userId });
 
   if (isLoading) return <LoadingPage />;
 
@@ -41,27 +101,37 @@ const ProfileFeed = (props: { userId: string; feedType: string }) => {
       <div>
         {props.feedType === "oglasi"
           ? "User has not posted"
-          : "User has no works"}
+          : props.feedType === "radovi"
+          ? "User has no works"
+          : "User has no ratings"}
       </div>
     );
 
   return (
     <div className="flex flex-col">
       {props.feedType === "oglasi"
-        ? data.map((fullPost) => (
-            <PostView {...fullPost} key={fullPost.post.id} />
-          ))
+        ? data.map((fullPost) =>
+            "post" in fullPost ? (
+              <PostView {...fullPost} key={fullPost.post.id} />
+            ) : null
+          )
+        : props.feedType === "radovi"
+        ? data.map((fullPost) =>
+            "preth" in fullPost ? (
+              <WorkView {...fullPost} key={fullPost.preth.id} />
+            ) : null
+          )
         : data.map((fullPost) => (
-            <WorkView {...fullPost} key={fullPost.post.id} />
+            <Comments {...fullPost} key={fullPost.author.id} />
           ))}
     </div>
   );
 };
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
-  const [activeTabProfile, setActiveTabProfile] = useState<"oglasi" | "radovi">(
-    "oglasi"
-  );
+  const [activeTabProfile, setActiveTabProfile] = useState<
+    "oglasi" | "radovi" | "ocjene"
+  >("oglasi");
 
   const { data } = api.profile.getUserByUsername.useQuery({
     username,
@@ -134,14 +204,26 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
           >
             Radovi
           </button>
+          <button
+            className={`px-4 py-2 font-semibold ${
+              activeTabProfile === "ocjene"
+                ? "border-b-2 border-blue-500 text-blue-500"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTabProfile("ocjene")}
+          >
+            Ocjene
+          </button>
         </div>
         <br></br>
         {/* Tab Content */}
         <div className="mt-4">
           {activeTabProfile === "oglasi" ? (
             <ProfileFeed userId={data.id} feedType="oglasi" />
-          ) : (
+          ) : activeTabProfile === "radovi" ? (
             <ProfileFeed userId={data.id} feedType="radovi" />
+          ) : (
+            <ProfileFeed userId={data.id} feedType="ocjene" />
           )}
         </div>
       </PageLayout>

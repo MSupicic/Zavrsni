@@ -59,13 +59,18 @@ import { PostView } from "~/components/postview";
 //   );
 // };
 
-interface FormData {
-  content: string;
-  trazimUslugu: boolean;
-  kategorija: string;
-  lokacija: string;
-  cijena: number;
-}
+type FormData =
+  | {
+      content: string;
+      trazimUslugu: boolean;
+      kategorija: string;
+      lokacija: string;
+      cijena: number;
+    }
+  | {
+      slika: string;
+      opis: string;
+    };
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -78,20 +83,30 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const [activeTab, setActiveTab] = useState<"Oglas" | "Rad">("Oglas");
+
+  // State for "Oglas"
   const [content, setContent] = useState<string>("");
   const [trazimUslugu, setTrazimUslugu] = useState<boolean>(false);
   const [kategorija, setKategorija] = useState<string>("");
   const [lokacija, setLokacija] = useState<string>("");
   const [cijena, setCijena] = useState<number>(0);
 
+  // State for "Rad"
+  const [slika, setSlika] = useState<string>("");
+  const [opis, setOpis] = useState<string>("");
+
   const ctx = api.useContext();
   const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
     onSuccess: () => {
+      // Reset fields
       setContent("");
       setTrazimUslugu(false);
       setKategorija("");
       setLokacija("");
       setCijena(0);
+      setSlika("");
+      setOpis("");
       void ctx.posts.getAll.invalidate();
     },
     onError: (e) => {
@@ -106,87 +121,157 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handleSubmit = () => {
+    if (activeTab === "Oglas") {
+      onSubmit({ content, trazimUslugu, kategorija, lokacija, cijena });
+    } else {
+      onSubmit({ slika, opis });
+    }
+  };
+
+  const handleMutation = () => {
+    if (activeTab === "Oglas") {
+      mutate({
+        content,
+        trazimUslugu,
+        kategorija,
+        lokacija,
+        cijena,
+      });
+    } else if (activeTab === "Rad") {
+      mutate({
+        slika,
+        opis,
+      });
+    }
+  };
+
   return (
     <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
       <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm"></div>
       <div className="z-10 w-full max-w-2xl rounded-lg bg-black p-8 shadow-lg">
         <h2 className="text-white-800 mb-4 text-xl font-bold">Create Post</h2>
+
+        {/* Tab Buttons */}
+        <div className="mb-4 flex border-b border-gray-500">
+          <button
+            className={`flex-1 py-2 text-center ${
+              activeTab === "Oglas"
+                ? "border-b-2 border-blue-500 text-blue-500"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("Oglas")}
+          >
+            Oglas
+          </button>
+          <button
+            className={`flex-1 py-2 text-center ${
+              activeTab === "Rad"
+                ? "border-b-2 border-blue-500 text-blue-500"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("Rad")}
+          >
+            Rad
+          </button>
+        </div>
+
+        {/* Form */}
         <form
           className="text-black"
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit({ content, trazimUslugu, kategorija, lokacija, cijena });
+            handleSubmit();
           }}
         >
-          <label className="mb-2 block text-white">
-            Content:
-            <input
-              type="text"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="border-black-300 w-full rounded border p-2 text-black"
-            />
-          </label>
-          <label className="mb-2 block text-white">
-            Trazim Uslugu:
-            <input
-              type="checkbox"
-              checked={trazimUslugu}
-              onChange={(e) => setTrazimUslugu(e.target.checked)}
-              className="ml-2 text-black"
-            />
-          </label>
-          <label className="mb-2 block text-white">
-            Kategorija:
-            <select
-              value={kategorija}
-              onChange={(e) => setKategorija(e.target.value)}
-              className="w-full rounded border border-gray-300 p-2 text-black"
-            >
-              <option value="">Select a Category</option>
-              <option value="vodovodna instalacija">
-                Vodovodna instalacija
-              </option>
-              <option value="elektrika">Elektrika</option>
-              <option value="postavljanje parketa">Postavljanje parketa</option>
-              <option value="ostalo">Ostalo</option>
-            </select>
-          </label>
-          <label className="mb-2 block text-white">
-            Lokacija:
-            <input
-              type="text"
-              value={lokacija}
-              onChange={(e) => setLokacija(e.target.value)}
-              className="w-full rounded border border-gray-300 p-2 text-black"
-            />
-          </label>
-          <label className="mb-2 block text-white">
-            Cijena:
-            <input
-              type="number"
-              value={cijena}
-              onChange={(e) => setCijena(Number(e.target.value))}
-              className="w-full rounded border border-gray-300 p-2 text-black"
-            />
-          </label>
+          {activeTab === "Oglas" ? (
+            <>
+              <label className="mb-2 block text-white">
+                Content:
+                <input
+                  type="text"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="border-black-300 w-full rounded border p-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Trazim Uslugu:
+                <input
+                  type="checkbox"
+                  checked={trazimUslugu}
+                  onChange={(e) => setTrazimUslugu(e.target.checked)}
+                  className="ml-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Kategorija:
+                <select
+                  value={kategorija}
+                  onChange={(e) => setKategorija(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                >
+                  <option value="">Select a Category</option>
+                  <option value="vodovodna instalacija">
+                    Vodovodna instalacija
+                  </option>
+                  <option value="elektrika">Elektrika</option>
+                  <option value="postavljanje parketa">
+                    Postavljanje parketa
+                  </option>
+                  <option value="ostalo">Ostalo</option>
+                </select>
+              </label>
+              <label className="mb-2 block text-white">
+                Lokacija:
+                <input
+                  type="text"
+                  value={lokacija}
+                  onChange={(e) => setLokacija(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Cijena:
+                <input
+                  type="number"
+                  value={cijena}
+                  onChange={(e) => setCijena(Number(e.target.value))}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <label className="mb-2 block text-white">
+                Slika:
+                <input
+                  type="text"
+                  value={slika}
+                  onChange={(e) => setSlika(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Opis:
+                <textarea
+                  value={opis}
+                  onChange={(e) => setOpis(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+            </>
+          )}
+
+          {/* Buttons */}
           <div className="flex justify-between text-white">
             <button
               type="submit"
               className="rounded bg-blue-500 py-2 px-4 font-bold text-white hover:bg-blue-700"
-              onClick={() =>
-                mutate({
-                  content,
-                  trazimUslugu,
-                  kategorija,
-                  lokacija,
-                  cijena,
-                })
-              }
+              onClick={() => handleMutation()}
             >
               Submit
             </button>
-
             <button
               type="button"
               onClick={onClose}

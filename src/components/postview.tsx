@@ -8,18 +8,13 @@ import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
-// Placeholder Comments component
-const Comments = () => {
-  return <div className="p-4 text-gray-300">Comments section here...</div>;
-};
-
 type PostWithUser = RouterOutputs["posts"]["getAll"][number];
 
 export const PostView = (props: PostWithUser) => {
   const { post, author } = props;
 
   // State to toggle comments visibility
-  const [showComments, setShowComments] = useState(false);
+  // const [showComments, setShowComments] = useState(false);
 
   return (
     <div key={post.id} className="flex gap-3 border-b border-slate-400 p-4">
@@ -59,17 +54,16 @@ export const PostView = (props: PostWithUser) => {
         </div>
 
         {/* Toggle Comments Section */}
-        <div className="mt-4 flex justify-center">
+        {/* <div className="mt-4 flex justify-center">
           <span
             className="cursor-pointer text-blue-500"
             onClick={() => setShowComments((prev) => !prev)}
           >
             {showComments ? "Hide comments" : "Show comments"}
           </span>
-        </div>
+        </div> */}
 
-        {/* Conditionally Render Comments */}
-        {showComments && <Comments />}
+        {/* {showComments && <Comments post={post} author={author} key={post.id} />} */}
       </div>
     </div>
   );
