@@ -7,42 +7,6 @@ import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
-export const Comments = (props: PostWithUser) => {
-  const { preth, author } = props;
-
-  return (
-    <div key={preth.id} className="flex gap-3 border-b border-slate-400 p-4">
-      <Image
-        src={author.profileImageUrl}
-        className="h-14 w-14 rounded-full"
-        alt={`@${author.username}'s profile picture`}
-        width={56}
-        height={56}
-      />
-      <div className="flex w-full flex-col">
-        <div className="flex gap-1 text-slate-300">
-          <Link href={`/@${author.username}`}>
-            <span>{`@${author.username} `}</span>
-          </Link>
-          <Link href={`/post/${preth.id}`}>
-            <span className="font-thin">{` · ${dayjs(
-              preth.createdAt
-            ).fromNow()}`}</span>
-          </Link>
-        </div>
-
-        <div className="text-2xl">
-          <span>Slika: </span> {preth.slika}
-        </div>
-        <div className="text-2xl">
-          <span>Opis: </span>
-          {preth.opis}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 type PostWithUser = RouterOutputs["posts"]["getAllWorks"][number];
 
 export const WorkView = (props: PostWithUser) => {

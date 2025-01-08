@@ -78,7 +78,7 @@ interface CreatePostModalProps {
   onSubmit: (formData: FormData) => void;
 }
 
-const CreatePostModal: React.FC<CreatePostModalProps> = ({
+export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
@@ -363,6 +363,7 @@ const Feed = ({ activeTab }: FeedProps) => {
 
 const Home: NextPage = () => {
   const { isLoaded: userLoaded, isSignedIn } = useUser();
+
   const [activeTab, setActiveTab] = useState<"Tražim" | "Nudim">("Tražim");
 
   api.posts.getAll.useQuery();

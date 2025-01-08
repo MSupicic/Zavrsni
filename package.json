@@ -8,9 +8,14 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@clerk/nextjs": "^4.11.7",
     "@prisma/client": "^4.9.0",
     "@radix-ui/react-slot": "^1.1.0",
@@ -19,13 +24,16 @@
     "@trpc/next": "^10.9.0",
     "@trpc/react-query": "^10.9.0",
     "@trpc/server": "^10.9.0",
+    "@types/jest": "^29.5.14",
     "@upstash/ratelimit": "^0.4.0",
     "@upstash/redis": "^1.20.1",
+    "babel-jest": "^29.7.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.7",
+    "jest": "^29.7.0",
     "lucide-react": "^0.460.0",
-    "next": "^13.2.1",
+    "next": "^13.5.8",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.0",
@@ -36,6 +44,9 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/eslint": "^8.21.1",
     "@types/node": "^18.14.0",
     "@types/prettier": "^2.7.2",
@@ -43,15 +54,20 @@
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.7",
     "eslint": "^8.34.0",
     "eslint-config-next": "^13.2.1",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^25.0.1",
     "postcss": "^8.4.14",
     "prettier": "^2.8.1",
     "prettier-plugin-tailwindcss": "^0.2.1",
     "prisma": "^4.13.0",
     "tailwindcss": "^3.2.0",
-    "typescript": "^4.9.5"
+    "ts-jest": "^29.2.5",
+    "typescript": "^4.9.5",
+    "vitest": "^2.1.8"
   },
   "ct3aMetadata": {
     "initVersion": "7.7.0"

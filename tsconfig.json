@@ -2,15 +2,17 @@
   "compilerOptions": {
     "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["jest", "node"],
+    "module": "esnext", // or "commonjs" depending on your setup
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",

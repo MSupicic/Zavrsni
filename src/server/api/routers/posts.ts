@@ -91,44 +91,44 @@ const addUserDataToPrethodni = async (preths: prethodni[]) => {
   });
 };
 
-// const addUserDataToRatings = async (posts: rating[]) => {
-//   const userId = posts.map((post) => post.);
-//   const users = (
-//     await clerkClient.users.getUserList({
-//       userId: userId,
-//       limit: 110,
-//     })
-//   ).map(filterUserForClient);
+const addUserDataToRatings = async (ratings: rating[]) => {
+  const userId = ratings.map((rating) => rating.authorId);
+  const users = (
+    await clerkClient.users.getUserList({
+      userId: userId,
+      limit: 110,
+    })
+  ).map(filterUserForClient);
 
-//   return posts.map((post) => {
-//     const author = users.find((user) => user.id === post.authorId);
+  return ratings.map((rating) => {
+    const author = users.find((user) => user.id === rating.authorId);
 
-//     if (!author) {
-//       console.error("AUTHOR NOT FOUND", post);
-//       throw new TRPCError({
-//         code: "INTERNAL_SERVER_ERROR",
-//         message: `Author for post not found. POST ID: ${post.id}, USER ID: ${post.authorId}`,
-//       });
-//     }
-//     if (!author.username) {
-//       // user the ExternalUsername
-//       if (!author.externalUsername) {
-//         throw new TRPCError({
-//           code: "INTERNAL_SERVER_ERROR",
-//           message: `Author has no Google Account: ${author.id}`,
-//         });
-//       }
-//       author.username = author.externalUsername;
-//     }
-//     return {
-//       post,
-//       author: {
-//         ...author,
-//         username: author.username ?? "(username not found)",
-//       },
-//     };
-//   });
-// };
+    if (!author) {
+      console.error("AUTHOR NOT FOUND", rating);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Author for rating not found. rating ID: ${rating.id}, USER ID: ${rating.authorId}`,
+      });
+    }
+    if (!author.username) {
+      // user the ExternalUsername
+      if (!author.externalUsername) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Author has no Google Account: ${author.id}`,
+        });
+      }
+      author.username = author.externalUsername;
+    }
+    return {
+      rating,
+      author: {
+        ...author,
+        username: author.username ?? "(username not found)",
+      },
+    };
+  });
+};
 
 // Create a new ratelimiter, that allows 3 requests per 1 minute
 // const ratelimit = new Ratelimit({
@@ -168,6 +168,15 @@ export const postsRouter = createTRPCRouter({
     return addUserDataToPrethodni(works);
   }),
 
+  getAllRatings: publicProcedure.query(async ({ ctx }) => {
+    const ratings = await ctx.prisma.rating.findMany({
+      take: 100,
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    return addUserDataToRatings(ratings);
+  }),
+
   getPostsByUserId: publicProcedure
     .input(
       z.object({
@@ -203,7 +212,23 @@ export const postsRouter = createTRPCRouter({
         .then(addUserDataToPrethodni)
     ),
 
-  // getRatingsByUserId
+  getRatingsByUserId: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(({ ctx, input }) =>
+      ctx.prisma.rating
+        .findMany({
+          where: {
+            authorId: input.userId,
+          },
+          take: 100,
+          orderBy: [{ createdAt: "desc" }],
+        })
+        .then(addUserDataToRatings)
+    ),
 
   create: privateProcedure
     .input(
@@ -219,13 +244,19 @@ export const postsRouter = createTRPCRouter({
           slika: z.string().min(1),
           opis: z.string().min(1),
         }),
+        z.object({
+          korisnik: z.string(),
+
+          ocjena: z.number(),
+          komentar: z.string(),
+        }),
       ])
     )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.userId;
 
       // Check if the input contains `slika` and `opis` (for `prethodni`)
-      if ("slika" in input && "opis" in input) {
+      if ("slika" in input) {
         const prethodni = await ctx.prisma.prethodni.create({
           data: {
             authorId,
@@ -234,6 +265,17 @@ export const postsRouter = createTRPCRouter({
           },
         });
         return prethodni; // Return the created record for `prethodni`
+      }
+      if ("komentar" in input) {
+        const rating = await ctx.prisma.rating.create({
+          data: {
+            authorId: input.korisnik,
+            korisnik: authorId,
+            ocjena: input.ocjena,
+            komentar: input.komentar,
+          },
+        });
+        return rating; // Return the created record for `prethodni`
       }
 
       // Otherwise, save to `Post`

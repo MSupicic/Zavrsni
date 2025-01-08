@@ -15,6 +15,9 @@ import dayjs from "dayjs";
 import Link from "next/link";
 
 import relativeTime from "dayjs/plugin/relativeTime";
+import { Comments } from "~/components/comments";
+import { UserButton, useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
 dayjs.extend(relativeTime);
 
 // const ProfileFeed = (props: { userId: string }, feedType: string) => {
@@ -35,95 +38,473 @@ dayjs.extend(relativeTime);
 //   );
 // };
 //type PostWithUser = RouterOutputs["posts"]["getAll"][number];
-type Author = {
-  username: string;
-  id: string;
-  profileImageUrl: string;
-  externalUsername: string | null;
-};
 
-export const Comments = ({ author }: { author: Author }) => {
+type FormData =
+  | {
+      content: string;
+      trazimUslugu: boolean;
+      kategorija: string;
+      lokacija: string;
+      cijena: number;
+    }
+  | {
+      slika: string;
+      opis: string;
+    };
+
+interface CreatePostModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (formData: FormData) => void;
+}
+
+const CreatePostModal: React.FC<CreatePostModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
+  const [activeTab, setActiveTab] = useState<"Oglas" | "Rad">("Oglas");
+
+  // State for "Oglas"
+  const [content, setContent] = useState<string>("");
+  const [trazimUslugu, setTrazimUslugu] = useState<boolean>(false);
+  const [kategorija, setKategorija] = useState<string>("");
+  const [lokacija, setLokacija] = useState<string>("");
+  const [cijena, setCijena] = useState<number>(0);
+
+  // State for "Rad"
+  const [slika, setSlika] = useState<string>("");
+  const [opis, setOpis] = useState<string>("");
+
+  const ctx = api.useContext();
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      // Reset fields
+      setContent("");
+      setTrazimUslugu(false);
+      setKategorija("");
+      setLokacija("");
+      setCijena(0);
+      setSlika("");
+      setOpis("");
+      void ctx.posts.getAll.invalidate();
+    },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Failed to post! Please try again later.");
+      }
+    },
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = () => {
+    if (activeTab === "Oglas") {
+      onSubmit({ content, trazimUslugu, kategorija, lokacija, cijena });
+    } else {
+      onSubmit({ slika, opis });
+    }
+  };
+
+  const handleMutation = () => {
+    if (activeTab === "Oglas") {
+      mutate({
+        content,
+        trazimUslugu,
+        kategorija,
+        lokacija,
+        cijena,
+      });
+    } else if (activeTab === "Rad") {
+      mutate({
+        slika,
+        opis,
+      });
+    }
+  };
+
   return (
-    <div key={author.id} className="flex gap-3 border-b border-slate-400 p-4">
-      <Image
-        src={author.profileImageUrl}
-        className="h-14 w-14 rounded-full"
-        alt={`@${author.username}'s profile picture`}
-        width={56}
-        height={56}
-      />
-      <div className="flex w-full flex-col">
-        <div className="flex gap-1 text-slate-300">
-          <Link href={`/@${author.username}`}>
-            <span>{`@${author.username} `}</span>
-          </Link>
-          {/* <Link href={`/post/${post.id}`}>
-            <span className="font-thin">{` · ${dayjs(
-              post.createdAt
-            ).fromNow()}`}</span>
-          </Link> */}
+    <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
+      <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm"></div>
+      <div className="z-10 w-full max-w-2xl rounded-lg bg-black p-8 shadow-lg">
+        <h2 className="text-white-800 mb-4 text-xl font-bold">Create Post</h2>
+
+        {/* Tab Buttons */}
+        <div className="mb-4 flex border-b border-gray-500">
+          <button
+            className={`flex-1 py-2 text-center ${
+              activeTab === "Oglas"
+                ? "border-b-2 border-blue-500 text-blue-500"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("Oglas")}
+          >
+            Oglas
+          </button>
+          <button
+            className={`flex-1 py-2 text-center ${
+              activeTab === "Rad"
+                ? "border-b-2 border-blue-500 text-blue-500"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("Rad")}
+          >
+            Rad
+          </button>
         </div>
 
-        {/* <div className="text-2xl">
-          <span>Kategorija: </span> {post.kategorija}
-        </div>
-        <div className="text-2xl">
-          <span>Opis: </span>
-          {post.content}
-        </div>
-        <div className="text-2xl">
-          <span>Lokacija: </span>
-          {post.lokacija}
-        </div>
-        <div className="text-2xl">
-          <span>Cijena: </span>
-          {post.cijena}$
-        </div> */}
+        {/* Form */}
+        <form
+          className="text-black"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          {activeTab === "Oglas" ? (
+            <>
+              <label className="mb-2 block text-white">
+                Content:
+                <input
+                  type="text"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="border-black-300 w-full rounded border p-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Trazim Uslugu:
+                <input
+                  type="checkbox"
+                  checked={trazimUslugu}
+                  onChange={(e) => setTrazimUslugu(e.target.checked)}
+                  className="ml-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Kategorija:
+                <select
+                  value={kategorija}
+                  onChange={(e) => setKategorija(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                >
+                  <option value="">Select a Category</option>
+                  <option value="vodovodna instalacija">
+                    Vodovodna instalacija
+                  </option>
+                  <option value="elektrika">Elektrika</option>
+                  <option value="postavljanje parketa">
+                    Postavljanje parketa
+                  </option>
+                  <option value="ostalo">Ostalo</option>
+                </select>
+              </label>
+              <label className="mb-2 block text-white">
+                Lokacija:
+                <input
+                  type="text"
+                  value={lokacija}
+                  onChange={(e) => setLokacija(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Cijena:
+                <input
+                  type="number"
+                  value={cijena}
+                  onChange={(e) => setCijena(Number(e.target.value))}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <label className="mb-2 block text-white">
+                Slika:
+                <input
+                  type="text"
+                  value={slika}
+                  onChange={(e) => setSlika(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+              <label className="mb-2 block text-white">
+                Opis:
+                <textarea
+                  value={opis}
+                  onChange={(e) => setOpis(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                />
+              </label>
+            </>
+          )}
+
+          {/* Buttons */}
+          <div className="flex justify-between text-white">
+            <button
+              type="submit"
+              className="rounded bg-blue-500 py-2 px-4 font-bold text-white hover:bg-blue-700"
+              onClick={() => handleMutation()}
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded bg-gray-500 py-2 px-4 font-bold text-white hover:bg-gray-700"
+            >
+              Close
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
+const CreatePostWizard: React.FC = () => {
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const { user } = useUser();
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+  };
+
+  const handleModalSubmit = (formData: FormData) => {
+    console.log("Form Data:", formData);
+    setModalOpen(false);
+    // Here you would handle the submission e.g., sending to an API
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="flex w-full gap-3">
+      <UserButton
+        appearance={{
+          elements: {
+            userButtonAvatarBox: {
+              width: 56,
+              height: 56,
+            },
+          },
+        }}
+      />
+      <div onClick={() => setModalOpen(true)} style={{ cursor: "pointer" }}>
+        Create Post
+      </div>
+      <CreatePostModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        onSubmit={handleModalSubmit}
+      />
+    </div>
+  );
+};
+
+type rating = {
+  ocjena: number;
+  komentar: string;
+  korisnik: string;
+};
+
+interface CreateRatingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (rating: rating) => void;
+  korisnik: string; // Accept korisnik as a prop
+}
+
+const CreateRatingModal: React.FC<CreateRatingModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  korisnik, // Destructure korisnik
+}) => {
+  const [komentar, setKomentar] = useState<string>("");
+  const [ocjena, setOcjena] = useState<number>(0);
+
+  const ctx = api.useContext();
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setKomentar("");
+      setOcjena(0);
+      void ctx.posts.getAll.invalidate();
+    },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Failed to post! Please try again later.");
+      }
+    },
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = () => {
+    onSubmit({ ocjena, komentar, korisnik }); // Use korisnik in the rating
+  };
+
+  const handleMutation = () => {
+    mutate({
+      ocjena,
+      komentar,
+      korisnik, // Use korisnik for mutation
+    });
+  };
+
+  return (
+    <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
+      <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm"></div>
+      <div className="z-10 w-full max-w-2xl rounded-lg bg-black p-8 shadow-lg">
+        <h2 className="text-white-800 mb-4 text-xl font-bold">Create Rating</h2>
+        <form
+          className="text-black"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <label className="mb-2 block text-white">
+            Komentar:
+            <input
+              type="text"
+              value={komentar}
+              onChange={(e) => setKomentar(e.target.value)}
+              className="w-full rounded border border-gray-300 p-2 text-black"
+            />
+          </label>
+          <label className="mb-2 block text-white">
+            Ocjena:
+            <input
+              type="number"
+              value={ocjena}
+              onChange={(e) => setOcjena(Number(e.target.value))}
+              className="w-full rounded border border-gray-300 p-2 text-black"
+            />
+          </label>
+
+          {/* Buttons */}
+          <div className="flex justify-between text-white">
+            <button
+              type="submit"
+              className="rounded bg-blue-500 py-2 px-4 font-bold text-white hover:bg-blue-700"
+              onClick={() => handleMutation()}
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded bg-gray-500 py-2 px-4 font-bold text-white hover:bg-gray-700"
+            >
+              Close
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+interface CreateRatingWizardProps {
+  korisnik: string; // Accepts `korisnik` as a prop
+}
+
+const CreateRatingWizard: React.FC<CreateRatingWizardProps> = ({
+  korisnik,
+}) => {
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const { user } = useUser();
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+  };
+
+  const handleModalSubmit = (rating: rating) => {
+    console.log("Data:", rating);
+    setModalOpen(false);
+  };
+
+  if (!user) return null;
+
+  return (
+    <div
+      className="flex w-full gap-3"
+      style={{ margin: "5px", padding: "5px" }}
+    >
+      <UserButton
+        appearance={{
+          elements: {
+            userButtonAvatarBox: {
+              width: 56,
+              height: 56,
+            },
+          },
+        }}
+      />
+      <div
+        onClick={() => setModalOpen(true)}
+        style={{ cursor: "pointer", margin: "2px", padding: "2px" }}
+      >
+        Create Rating
+      </div>
+      <CreateRatingModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        onSubmit={handleModalSubmit}
+        korisnik={korisnik} // Pass korisnik to the modal
+      />
+    </div>
+  );
+};
+
 const ProfileFeed = (props: { userId: string; feedType: string }) => {
-  // Conditionally use the appropriate query based on feedType
   const { data, isLoading } =
     props.feedType === "oglasi"
       ? api.posts.getPostsByUserId.useQuery({ userId: props.userId })
       : props.feedType === "radovi"
       ? api.posts.getWorksByUserId.useQuery({ userId: props.userId })
-      : api.posts.getPostsByUserId.useQuery({ userId: props.userId });
-  // api.posts.getRatingsByUserId.useQuery({ userId: props.userId });
+      : api.posts.getRatingsByUserId.useQuery({ userId: props.userId });
 
   if (isLoading) return <LoadingPage />;
 
-  if (!data || data.length === 0)
-    return (
-      <div>
-        {props.feedType === "oglasi"
-          ? "User has not posted"
-          : props.feedType === "radovi"
-          ? "User has no works"
-          : "User has no ratings"}
-      </div>
-    );
+  // if (!data || data.length === 0)
+  //   return (
+  //     <div>
+  //       {props.feedType === "oglasi"
+  //         ? "User has not posted"
+  //         : props.feedType === "radovi"
+  //         ? "User has no works"
+  //         : "User has no ratings"}
+  //     </div>
+  //   );
 
   return (
     <div className="flex flex-col">
       {props.feedType === "oglasi"
-        ? data.map((fullPost) =>
+        ? data?.map((fullPost) =>
             "post" in fullPost ? (
               <PostView {...fullPost} key={fullPost.post.id} />
             ) : null
           )
         : props.feedType === "radovi"
-        ? data.map((fullPost) =>
+        ? data?.map((fullPost) =>
             "preth" in fullPost ? (
               <WorkView {...fullPost} key={fullPost.preth.id} />
             ) : null
           )
-        : data.map((fullPost) => (
-            <Comments {...fullPost} key={fullPost.author.id} />
-          ))}
+        : data?.map((fullPost) =>
+            "rating" in fullPost ? (
+              <Comments {...fullPost} key={fullPost.rating.id} />
+            ) : null
+          )}
     </div>
   );
 };
@@ -142,27 +523,6 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
       <Head>
         <title>{data.username ?? data.externalUsername}</title>
       </Head>
-      {/* za uredit profil */}
-      {/* <PageLayout>
-        <div className="relative h-36 bg-slate-600">
-          <Image
-            src={data.profileImageUrl}
-            alt={`${
-              data.username ?? data.externalUsername ?? "unknown"
-            }'s profile pic`}
-            width={128}
-            height={128}
-            className="absolute bottom-0 left-0 -mb-[64px] ml-4 rounded-full border-4 border-black bg-black"
-          />
-        </div>
-        <div className="h-[64px]"></div>
-        <div className="p-4 text-2xl font-bold">{`@${
-          data.username ?? data.externalUsername ?? "unknown"
-        }`}</div>
-        <div className="w-full border-b border-slate-400" />
-        oglasi i radovi
-        <ProfileFeed userId={data.id} />
-      </PageLayout> */}
 
       <PageLayout>
         <div className="h-30 relative bg-slate-600">
@@ -180,6 +540,11 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
         <div className="m-10 p-4 text-2xl font-bold">{`@${
           data.username ?? data.externalUsername ?? "unknown"
         }`}</div>
+        <div className="">
+          {activeTabProfile === "ocjene" && (
+            <CreateRatingWizard korisnik={data.id ?? "unknown"} />
+          )}
+        </div>
         <div className="mb-4 w-full border-b border-slate-400" />
 
         {/* Tab Navigation */}

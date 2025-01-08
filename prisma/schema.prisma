@@ -22,8 +22,9 @@ datasource db {
 
 model rating {
   id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
   korisnik  String
- authorId  String
+  authorId  String
   ocjena    Int
   komentar  String
      // Foreign key field
@@ -49,9 +50,9 @@ model Post {
 model prethodni{
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-   authorId  String 
-   slika    String
-    opis     String
+  authorId  String 
+  slika    String
+  opis     String
 }
 
 
