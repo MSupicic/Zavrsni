@@ -50,7 +50,7 @@ export const PostView = (props: PostWithUser) => {
         </div>
         <div className="text-2xl">
           <span>Cijena: </span>
-          {post.cijena}$
+          {post.cijena}
         </div>
 
         {/* Toggle Comments Section */}

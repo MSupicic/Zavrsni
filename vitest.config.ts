@@ -5,12 +5,14 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+
   test: {
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "~": path.resolve(__dirname, "src"),
     },
   },
 });

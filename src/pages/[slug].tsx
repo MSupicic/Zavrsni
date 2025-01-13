@@ -45,7 +45,7 @@ type FormData =
       trazimUslugu: boolean;
       kategorija: string;
       lokacija: string;
-      cijena: number;
+      cijena: string;
     }
   | {
       slika: string;
@@ -70,11 +70,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [trazimUslugu, setTrazimUslugu] = useState<boolean>(false);
   const [kategorija, setKategorija] = useState<string>("");
   const [lokacija, setLokacija] = useState<string>("");
-  const [cijena, setCijena] = useState<number>(0);
+  const [cijena, setCijena] = useState<string>("");
 
   // State for "Rad"
   const [slika, setSlika] = useState<string>("");
   const [opis, setOpis] = useState<string>("");
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const ctx = api.useContext();
   const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
@@ -84,7 +86,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
       setTrazimUslugu(false);
       setKategorija("");
       setLokacija("");
-      setCijena(0);
+      setCijena("");
       setSlika("");
       setOpis("");
       void ctx.posts.getAll.invalidate();
@@ -123,6 +125,20 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
         slika,
         opis,
       });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setSlika(base64String);
+      };
+      reader.readAsDataURL(e.target.files[0]);
     }
   };
 
@@ -167,7 +183,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
           {activeTab === "Oglas" ? (
             <>
               <label className="mb-2 block text-white">
-                Content:
+                Opis:
                 <input
                   type="text"
                   value={content}
@@ -214,9 +230,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
               <label className="mb-2 block text-white">
                 Cijena:
                 <input
-                  type="number"
+                  type="text"
                   value={cijena}
-                  onChange={(e) => setCijena(Number(e.target.value))}
+                  onChange={(e) => setCijena(e.target.value)}
                   className="w-full rounded border border-gray-300 p-2 text-black"
                 />
               </label>
@@ -226,11 +242,22 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
               <label className="mb-2 block text-white">
                 Slika:
                 <input
-                  type="text"
-                  value={slika}
-                  onChange={(e) => setSlika(e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
                   className="w-full rounded border border-gray-300 p-2 text-black"
                 />
+                {selectedFile && (
+                  <div className="mt-2">
+                    <Image
+                      src={URL.createObjectURL(selectedFile)}
+                      alt="Preview"
+                      width={200}
+                      height={150}
+                      className="rounded"
+                    />
+                  </div>
+                )}
               </label>
               <label className="mb-2 block text-white">
                 Opis:
@@ -517,7 +544,9 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const { data } = api.profile.getUserByUsername.useQuery({
     username,
   });
+
   if (!data) return <div>404</div>;
+
   return (
     <>
       <Head>
@@ -537,9 +566,14 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
           />
         </div>
         <div className="h-[44px]"></div>
-        <div className="m-10 p-4 text-2xl font-bold">{`@${
-          data.username ?? data.externalUsername ?? "unknown"
-        }`}</div>
+        <div className="m-10 p-4">
+          <div className="text-2xl font-bold">{`${
+            data.username ?? data.externalUsername ?? "unknown"
+          }`}</div>
+          {data.email && (
+            <div className="mt-2 text-slate-400">Kontakt: {data.email}</div>
+          )}
+        </div>
         <div className="">
           {activeTabProfile === "ocjene" && (
             <CreateRatingWizard korisnik={data.id ?? "unknown"} />

@@ -37,7 +37,15 @@ export const WorkView = (props: PostWithUser) => {
         </div>
 
         <div className="text-2xl">
-          <span>Slika: </span> {preth.slika}
+          {preth.slika && (
+            <Image
+              src={preth.slika}
+              alt="Work preview"
+              width={300}
+              height={200}
+              className="rounded-lg"
+            />
+          )}
         </div>
         <div className="text-2xl">
           <span>Opis: </span>

@@ -4,6 +4,7 @@ export const filterUserForClient = (user: User) => {
     id: user.id,
     username: user.username,
     profileImageUrl: user.profileImageUrl,
+    email: user.emailAddresses[0]?.emailAddress ?? null,
     externalUsername:
       user.externalAccounts.find(
         (externalAccount) => externalAccount.provider === "oauth_google"

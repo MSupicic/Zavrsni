@@ -5,7 +5,7 @@ import { api } from "~/utils/api";
 
 import Image from "next/image";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { PageLayout } from "~/components/layout";
 import { PostView } from "~/components/postview";
@@ -65,7 +65,7 @@ type FormData =
       trazimUslugu: boolean;
       kategorija: string;
       lokacija: string;
-      cijena: number;
+      cijena: string;
     }
   | {
       slika: string;
@@ -90,11 +90,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [trazimUslugu, setTrazimUslugu] = useState<boolean>(false);
   const [kategorija, setKategorija] = useState<string>("");
   const [lokacija, setLokacija] = useState<string>("");
-  const [cijena, setCijena] = useState<number>(0);
+  const [cijena, setCijena] = useState<string>("");
 
   // State for "Rad"
   const [slika, setSlika] = useState<string>("");
   const [opis, setOpis] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const ctx = api.useContext();
   const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
@@ -104,7 +105,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       setTrazimUslugu(false);
       setKategorija("");
       setLokacija("");
-      setCijena(0);
+      setCijena("");
       setSlika("");
       setOpis("");
       void ctx.posts.getAll.invalidate();
@@ -143,6 +144,20 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         slika,
         opis,
       });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setSlika(base64String);
+      };
+      reader.readAsDataURL(e.target.files[0]);
     }
   };
 
@@ -187,7 +202,40 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           {activeTab === "Oglas" ? (
             <>
               <label className="mb-2 block text-white">
-                Content:
+                Kategorija:
+                <select
+                  value={kategorija}
+                  onChange={(e) => setKategorija(e.target.value)}
+                  className="w-full rounded border border-gray-300 p-2 text-black"
+                >
+                  <option value="">Odaberi kategoriju</option>
+
+                  <option value="elektroinstalacije">
+                    Rad s elektroinstalacijama
+                  </option>
+                  <option value="vodoinstalacije">
+                    Vodoinstalaterski radovi
+                  </option>
+                  <option value="keramika">Keramičarski radovi</option>
+
+                  <option value="popravak kliznih vrata">
+                    Postavljanje/popravak vrata
+                  </option>
+                  <option value="montiranje ograde">Montiranje ograde</option>
+                  <option value="krov">Radovi na krovu</option>
+                  <option value="parket">Postavljanje parketa</option>
+                  <option value="plocice">Postavljanje pločića</option>
+
+                  <option value="klima montaza">
+                    Postavljanje/popravak klime
+                  </option>
+
+                  <option value="namjestaj">Izrada namještaja</option>
+                  <option value="soboslikanje">Soboslikarski radovi</option>
+                </select>
+              </label>
+              <label className="mb-2 block text-white">
+                Opis:
                 <input
                   type="text"
                   value={content}
@@ -196,31 +244,27 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 />
               </label>
               <label className="mb-2 block text-white">
-                Trazim Uslugu:
-                <input
-                  type="checkbox"
-                  checked={trazimUslugu}
-                  onChange={(e) => setTrazimUslugu(e.target.checked)}
-                  className="ml-2 text-black"
-                />
-              </label>
-              <label className="mb-2 block text-white">
-                Kategorija:
-                <select
-                  value={kategorija}
-                  onChange={(e) => setKategorija(e.target.value)}
-                  className="w-full rounded border border-gray-300 p-2 text-black"
-                >
-                  <option value="">Select a Category</option>
-                  <option value="vodovodna instalacija">
-                    Vodovodna instalacija
-                  </option>
-                  <option value="elektrika">Elektrika</option>
-                  <option value="postavljanje parketa">
-                    Postavljanje parketa
-                  </option>
-                  <option value="ostalo">Ostalo</option>
-                </select>
+                Vrsta oglasa:
+                <div className="mt-2 flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={trazimUslugu}
+                      onChange={() => setTrazimUslugu(true)}
+                      className="mr-2"
+                    />
+                    Tražim uslugu
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={!trazimUslugu}
+                      onChange={() => setTrazimUslugu(false)}
+                      className="mr-2"
+                    />
+                    Nudim uslugu
+                  </label>
+                </div>
               </label>
               <label className="mb-2 block text-white">
                 Lokacija:
@@ -234,9 +278,9 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               <label className="mb-2 block text-white">
                 Cijena:
                 <input
-                  type="number"
+                  type="text"
                   value={cijena}
-                  onChange={(e) => setCijena(Number(e.target.value))}
+                  onChange={(e) => setCijena(e.target.value)}
                   className="w-full rounded border border-gray-300 p-2 text-black"
                 />
               </label>
@@ -246,9 +290,9 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               <label className="mb-2 block text-white">
                 Slika:
                 <input
-                  type="text"
-                  value={slika}
-                  onChange={(e) => setSlika(e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
                   className="w-full rounded border border-gray-300 p-2 text-black"
                 />
               </label>
@@ -332,6 +376,9 @@ type FeedProps = {
 
 const Feed = ({ activeTab }: FeedProps) => {
   const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
+  const [kategorijaFilter, setKategorijaFilter] = useState("");
+  const [lokacijaFilter, setLokacijaFilter] = useState("");
+  const [priceSortDirection, setPriceSortDirection] = useState("asc");
 
   if (postsLoading)
     return (
@@ -342,16 +389,78 @@ const Feed = ({ activeTab }: FeedProps) => {
 
   if (!data) return <div>Something went wrong</div>;
 
+  let filteredData = data.filter(
+    (post) =>
+      post.post.kategorija
+        .toLowerCase()
+        .includes(kategorijaFilter.toLowerCase()) &&
+      post.post.lokacija.toLowerCase().startsWith(lokacijaFilter.toLowerCase())
+  );
+
+  function extractNumber(inputString: any) {
+    const matches = inputString.match(/-?\d+\.?\d*/); // Matches integers and floats, including negative values
+    return matches ? parseFloat(matches[0]) : null; // Convert the matched string to a floating point number
+  }
+
+  if (priceSortDirection === "asc") {
+    filteredData.sort(
+      (a, b) =>
+        (extractNumber(a.post.cijena) ?? 0) -
+        (extractNumber(b.post.cijena) ?? 0)
+    );
+  } else {
+    filteredData.sort(
+      (a, b) =>
+        (extractNumber(b.post.cijena) ?? 0) -
+        (extractNumber(a.post.cijena) ?? 0)
+    );
+  }
+
   return (
     <div className="flex grow flex-col overflow-y-scroll">
+      <div className="mb-4 rounded-lg bg-slate-900 p-4">
+        <div className="mb-3 text-lg font-semibold text-white">Filteri:</div>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center">
+            <label className="mr-2 text-white">Kategorija:</label>
+            <input
+              value={kategorijaFilter}
+              onChange={(e) => setKategorijaFilter(e.target.value)}
+              className="rounded px-2 py-1 text-black"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <label className="mr-2 text-white">Lokacija:</label>
+            <input
+              value={lokacijaFilter}
+              onChange={(e) => setLokacijaFilter(e.target.value)}
+              className="rounded px-2 py-1 text-black"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <label className="mr-2 text-white">Cijena:</label>
+            <select
+              value={priceSortDirection}
+              onChange={(e) => setPriceSortDirection(e.target.value)}
+              className="rounded px-2 py-1 text-black"
+            >
+              <option value="asc">Niža prema višoj</option>
+              <option value="desc">Viša prema nižoj</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {activeTab === "Nudim"
-        ? [...data].map(
+        ? filteredData.map(
             (fullPost) =>
               !fullPost.post.trazimUslugu && (
                 <PostView {...fullPost} key={fullPost.post.id} />
               )
           )
-        : [...data].map(
+        : filteredData.map(
             (fullPost) =>
               fullPost.post.trazimUslugu && (
                 <PostView {...fullPost} key={fullPost.post.id} />

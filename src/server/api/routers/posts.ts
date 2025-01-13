@@ -238,7 +238,7 @@ export const postsRouter = createTRPCRouter({
           trazimUslugu: z.boolean(),
           kategorija: z.string(),
           lokacija: z.string(),
-          cijena: z.number(),
+          cijena: z.string(),
         }),
         z.object({
           slika: z.string().min(1),
@@ -246,7 +246,6 @@ export const postsRouter = createTRPCRouter({
         }),
         z.object({
           korisnik: z.string(),
-
           ocjena: z.number(),
           komentar: z.string(),
         }),

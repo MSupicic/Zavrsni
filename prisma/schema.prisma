@@ -31,6 +31,8 @@ model rating {
   //post      Post     @relation(fields: [postId], references: [id]) // Relation setup
 
   //@@index([postId]) // Optional: Index for better query performance
+   // Composite unique constraint
+  @@unique([korisnik, authorId])
 }
 
 model Post {
@@ -42,7 +44,7 @@ model Post {
   trazimUslugu Boolean
   kategorija String //vodovodna instalacija, elektrika, postavljanje parketa, ostalo
   lokacija  String
-  cijena   Int 
+  cijena   String 
 
   @@index([authorId])
 }
@@ -51,10 +53,6 @@ model prethodni{
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   authorId  String 
-  slika    String
-  opis     String
+  slika     String @db.LongText 
+  opis      String
 }
-
-
-
-
