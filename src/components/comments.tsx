@@ -23,7 +23,7 @@ export const Comments = (props: PostWithUser) => {
     userId: rating.korisnik,
   });
 
-  if (!data || !data?.username || data?.profileImageUrl) return null;
+  if (!data || !data?.username || !data?.profileImageUrl) return null;
   return (
     <div key={rating.id} className="flex gap-3 border-b border-slate-400 p-4">
       <Image
