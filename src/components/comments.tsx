@@ -3,7 +3,6 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { api, RouterOutputs } from "~/utils/api";
-import { UserButton, useUser } from "@clerk/nextjs";
 
 dayjs.extend(relativeTime);
 
