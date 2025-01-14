@@ -12,18 +12,18 @@ const Navbar = () => {
     username: searchInput,
   });
 
-  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchInput.trim()) {
       if (data) {
-        await router.push(`/@${searchInput}`);
+        void router.push(`/@${searchInput}`);
         setSearchInput("");
       }
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    void signOut();
   };
 
   return (

@@ -535,7 +535,6 @@ const ProfileFeed = (props: { userId: string; feedType: string }) => {
     </div>
   );
 };
-
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const [activeTabProfile, setActiveTabProfile] = useState<
     "oglasi" | "radovi" | "ocjene"

@@ -2,24 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { api, RouterOutputs } from "~/utils/api";
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 
 dayjs.extend(relativeTime);
-
-// const { data } = api.profile.getUserByUsername.useQuery({
-//     username: searchInput,
-//   });
-//author.username
-// const { data, isLoading } = api.posts.getPostsByUserId.useQuery({
-//     userId: props.userId,
-//   });
 
 type PostWithUser = RouterOutputs["posts"]["getAllRatings"][number];
 
 export const Comments = (props: PostWithUser) => {
-  const { rating, author } = props;
+  const { rating } = props;
 
-  const { data, isLoading, error } = api.profile.getUserById.useQuery({
+  const { data } = api.profile.getUserById.useQuery({
     userId: rating.korisnik,
   });
 
