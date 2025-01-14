@@ -6,20 +6,24 @@ import { api } from "~/utils/api";
 const Navbar = () => {
   const [searchInput, setSearchInput] = useState("");
   const { signOut } = useAuth();
-  const router = useRouter(); // Import Next.js router
+  const router = useRouter();
 
   const { data } = api.profile.getUserByUsername.useQuery({
     username: searchInput,
   });
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchInput.trim()) {
       if (data) {
-        router.push(`/@${searchInput}`); // Redirect to /@{name}
-        setSearchInput(""); // Clear input after submission
+        await router.push(`/@${searchInput}`);
+        setSearchInput("");
       }
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
@@ -69,9 +73,7 @@ const Navbar = () => {
 
             <a href="http://localhost:3000/">
               <button
-                onClick={() => {
-                  signOut();
-                }}
+                onClick={handleSignOut}
                 className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition hover:bg-red-700"
               >
                 Logout

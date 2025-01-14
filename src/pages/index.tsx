@@ -389,7 +389,7 @@ const Feed = ({ activeTab }: FeedProps) => {
 
   if (!data) return <div>Something went wrong</div>;
 
-  let filteredData = data.filter(
+  const filteredData = data.filter(
     (post) =>
       post.post.kategorija
         .toLowerCase()
@@ -397,7 +397,7 @@ const Feed = ({ activeTab }: FeedProps) => {
       post.post.lokacija.toLowerCase().startsWith(lokacijaFilter.toLowerCase())
   );
 
-  function extractNumber(inputString: String) {
+  function extractNumber(inputString: string) {
     const matches = inputString.match(/-?\d+\.?\d*/); // Matches integers and floats, including negative values
     return matches ? parseFloat(matches[0]) : null; // Convert the matched string to a floating point number
   }
