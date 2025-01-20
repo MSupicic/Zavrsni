@@ -514,7 +514,7 @@ const ProfileFeed = (props: { userId: string; feedType: string }) => {
   //   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col border-x border-slate-400">
       {props.feedType === "oglasi"
         ? data?.map((fullPost) =>
             "post" in fullPost ? (
@@ -559,8 +559,8 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             alt={`${
               data.username ?? data.externalUsername ?? "unknown"
             }'s profile pic`}
-            width={128}
-            height={128}
+            width={110}
+            height={110}
             className="absolute bottom-0 left-0 -mb-[58px] ml-4 rounded-full border-4 border-black bg-black"
           />
         </div>

@@ -1,58 +1,40 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-// datasource db {
-//     provider     = "mysql"
-//     url          = env("DATABASE_URL")
-//     relationMode = "prisma"
-// }
-
-// generator client {
-//     provider        = "prisma-client-js"
-//     previewFeatures = ["jsonProtocol"]
-// }
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "mysql"
-  url       = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model rating {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
   korisnik  String
-  authorId  String
   ocjena    Int
   komentar  String
-     // Foreign key field
-  //post      Post     @relation(fields: [postId], references: [id]) // Relation setup
+  authorId  String
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  //@@index([postId]) // Optional: Index for better query performance
-   // Composite unique constraint
   @@unique([korisnik, authorId])
 }
 
-model Post {
+model prethodni {
   id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  slika     String   @db.LongText
+  opis      String
   authorId  String
-  content   String   @db.VarChar(255)
-
-  trazimUslugu Boolean
-  kategorija String //vodovodna instalacija, elektrika, postavljanje parketa, ostalo
-  lokacija  String
-  cijena   String 
-
-  @@index([authorId])
+  createdAt DateTime @default(now())
 }
 
-model prethodni{
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  authorId  String 
-  slika     String @db.LongText 
-  opis      String
+model post {
+  id           String   @id
+  createdAt    DateTime @default(now())
+  authorId     String
+  content      String   @db.VarChar(255)
+  trazimUslugu Boolean
+  kategorija   String
+  lokacija     String
+  cijena       String
+
+  @@index([authorId], map: "Post_authorId_idx")
 }

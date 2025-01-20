@@ -398,8 +398,8 @@ const Feed = ({ activeTab }: FeedProps) => {
   );
 
   function extractNumber(inputString: string) {
-    const matches = inputString.match(/-?\d+\.?\d*/); // Matches integers and floats, including negative values
-    return matches ? parseFloat(matches[0]) : null; // Convert the matched string to a floating point number
+    const matches = inputString.match(/-?\d+\.?\d*/);
+    return matches ? parseFloat(matches[0]) : null;
   }
 
   if (priceSortDirection === "asc") {
@@ -419,7 +419,7 @@ const Feed = ({ activeTab }: FeedProps) => {
   return (
     <div className="flex grow flex-col overflow-y-scroll">
       <div className="mb-4 rounded-lg bg-slate-900 p-4">
-        <div className="mb-3 text-lg font-semibold text-white">Filteri:</div>
+        <div className="mb-3 text-lg font-semibold text-white">Filtri:</div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center">
             <label className="mr-2 text-white">Kategorija:</label>
