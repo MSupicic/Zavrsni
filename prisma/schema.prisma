@@ -26,7 +26,7 @@ model prethodni {
   createdAt DateTime @default(now())
 }
 
-model post {
+model Post {
   id           String   @id
   createdAt    DateTime @default(now())
   authorId     String
